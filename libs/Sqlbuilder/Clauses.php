@@ -12,12 +12,12 @@
 namespace Octris\Sqlbuilder;
 
 /**
- * SQL builder clause.
+ * SQL builder clauses.
  *
  * @copyright   copyright (c) 2016 by Harald Lapp
  * @author      Harald Lapp <harald@octris.org>
  */
-class Clause
+class Clauses
 {
     protected $instance;
 
