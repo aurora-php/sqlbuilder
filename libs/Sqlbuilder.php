@@ -34,13 +34,6 @@ class Sqlbuilder
     protected $dialect;
 
     /**
-     * Parameters for prepared SQL statement.
-     *
-     * @type    array
-     */
-    protected $data;
-
-    /**
      * Template snippets.
      *
      * @type    array
@@ -58,28 +51,29 @@ class Sqlbuilder
      * Constructor.
      *
      * @param   \Octris\Core\Db\Device\IConnection  $cn         Database connection to use with generated sql statement.
-     * @param   array                               $data       Optional parameters for prepared SQL statement.
      */
-    public function __construct(\Octris\Core\Db\Device\IConnection $cn, array $data = array())
+    public function __construct(\Octris\Core\Db\Device\IConnection $cn)
     {
         if (!($cn instanceof \Octris\Core\Db\Device\IDialect)) {
             throw new \InvalidArgumentException(get_class($cn) . ' must be a member of "\Octris\Core\Db\Device\IDialect"');
         }
         
         $this->cn = $cn;
-        $this->data = $data;
     }
 
     /**
-     * Build template snippet.
+     * Resolve template snippet.
      *
-     * @param   string                              $name       Name of snippet to return.
-     * @return  string                                          Template snippet.
+     * @param   string                              $name       Name of snippet to resolve.
+     * @param   array                               $param      Optional query parameters.
+     * @return  string                                          Resolved template snippet.
      */
-    public function build($name)
+    public function resolveSnippet($name, array $param = array())
     {
+        $name = strtoupper($name);
+        
         if (isset($this->clauses[$name])) {
-            $return = $this->clauses[$name]->build();
+            $return = $this->clauses[$name]->resolveClauses($param);
         } elseif (isset($this->snippets[$name])) {
             $return = $this->snippets[$name];
         } else {
@@ -94,10 +88,13 @@ class Sqlbuilder
      *
      * @param   string                              $name       Name of snippet to add.
      * @param   string                              $snippet    Snippet content to add.
+     * @return  \Octris\Sqlbuilder                  This instance for method chaining.
      */
     public function addSnippet($name, $snippet)
     {
         $this->snippets[strtoupper($name)] = $snippet;
+        
+        return $this;
     }
 
     /**
@@ -121,6 +118,7 @@ class Sqlbuilder
      * @param   string              $joiner                     String to use for joining multiple clauses of the same name.
      * @param   string              $prefix                     Prefix string for joined clauses.
      * @param   string              $postfix                    Postfix string for joined clauses.
+     * @param   bool                $is_inclusive               Clause mode.
      */
     protected function addClause($name, $sql, $joiner, $prefix, $postfix, $is_inclusive)
     {
@@ -134,6 +132,17 @@ class Sqlbuilder
     }
 
     /**
+     * Add an 'AND' condition. This method is an alias for "addAndWhere".
+     *
+     * @param   string                      $sql    SQL snippet for where condition.
+     * @return  \Octris\Sqlbuilder                  This instance for method chaining.
+     */
+    public function addWhere($sql)
+    {
+        return $this->addAndWhere($sql);
+    }
+
+    /**
      * Add an 'AND' condition.
      *
      * @param   string                      $sql    SQL snippet for where condition.
@@ -143,7 +152,7 @@ class Sqlbuilder
     {
         $this->addClause('WHERE', $sql, ' AND ', 'WHERE ', "\n", false);
 
-        rerturn $this;
+        return $this;
     }
 
     /**
@@ -156,7 +165,7 @@ class Sqlbuilder
     {
         $this->addClause('WHERE', $sql, ' AND ', 'WHERE ', "\n", true);
 
-        rerturn $this;
+        return $this;
     }
 
     /**
@@ -164,31 +173,36 @@ class Sqlbuilder
      *
      * @param   int             $page               Page to start querying.
      * @param   int             $limit              Limit rows to return.
+     * @return  \Octris\Sqlbuilder                  This instance for method chaining.
      */
     public function addPaging($page, $limit)
     {
-        if (isset($this->clauses[$name])) {
+        if (isset($this->clauses['PAGING'])) {
             throw new \Exception('Only one paging can be defined');
         }
             
-        $this->addClause('PAGING', $this->cn->getLimitString(($page - 1) * $limit, $limit), '', '', "\n");
+        $this->addClause('PAGING', $this->cn->getLimitString(($page - 1) * $limit, $limit), '', '', "\n", false);
+        
+        return $this;
     }
 
     /**
      * Build and execute SQL statement.
      * 
-     * @return  \Octris\Core\Db\Device\IResult|null             Result or null if no result set was produced by query.
+     * @param   \Octris\Sqlbuilder\Template $tpl        $tpl        Template instance to transform into a SQL statement and execute.
+     * @param   array                                   $param      Optional query parameters.
+     * @return  \Octris\Core\Db\Device\IResult|null                 Result or null if no result set was produced by query.
      */
-    public function execute(\Octris\Sqlbuilder\Template $tpl)
+    public function execute(\Octris\Sqlbuilder\Template $tpl, array $param = array())
     {
-        $sql = (string)$tpl;
+        $sql = $tpl->resolveSql($param);
 
         $types = '';
         $values = [];
 
-        $sql = preg_replace_callback('/@(?P<type>.):(?P<name>.+?)@/', function($match) use (&$types, &$values) {
+        $sql = preg_replace_callback('/@(?P<type>.):(?P<name>.+?)@/', function($match) use (&$types, &$values, $param) {
             $types .= $match['type'];
-            $values[] = $this->data[$match['name']];
+            $values[] = $param[$match['name']];
 
             return '?';
         }, $sql);
