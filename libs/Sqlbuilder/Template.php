@@ -61,8 +61,6 @@ class Template
             return $snippet;
         }, $this->sql);
 
-        ddump($sql);
-
         return $sql;
     }
 }
