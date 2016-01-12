@@ -47,11 +47,14 @@ class Where
      */
     protected $type;
 
+    protected $builder;
+
     /**
      * Constructor.
      */
-    public function __construct($type, $parent = null)
+    public function __construct($builder, $type, $parent = null)
     {
+        $this->builder = $builder;
         $this->type = $type;
         $this->parent = $parent;
     }
@@ -63,7 +66,9 @@ class Where
      */
     public function build()
     {
-        $return = '(' . implode(' ' . $this->type . ' ', $this->clauses) . ')';
+        $return = (count($this->clauses) > 0
+                    ? '(' . implode(' ' . $this->type . ' ', $this->clauses) . ')'
+                    : '');
 
         return $return;
     }
@@ -75,7 +80,7 @@ class Where
      */
     public function addAndWhere()
     {
-        $instance = new static('AND', $this);
+        $instance = new static($this->builder, 'AND', $this);
 
         $this->groups[] = $instance;
 
@@ -89,7 +94,7 @@ class Where
      */
     public function addOrWhere()
     {
-        $instance = new static('OR', $this);
+        $instance = new static($this->builder, 'OR', $this);
 
         $this->groups[] = $instance;
 
@@ -105,7 +110,9 @@ class Where
      */
     public function addClause($name, $where)
     {
-        $this->clauses[$name] = $where;
+        if ($this->builder->isExist($name)) {
+            $this->clauses[$name] = $where;
+        }
 
         return $this;
     }

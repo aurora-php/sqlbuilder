@@ -79,6 +79,14 @@ class Sqlbuilder
     }
 
     /**
+     *
+     */
+    public function isExist($name)
+    {
+        return isset($this->data[$name]);
+    }
+
+    /**
      * Add a textual snippet.
      *
      * @param   string                              $name       Name of snippet to add.
@@ -129,7 +137,7 @@ class Sqlbuilder
      */
     public function addAndWhere()
     {
-        $instance = new \Octris\Sqlbuilder\Where('AND');
+        $instance = new \Octris\Sqlbuilder\Where($this, 'AND');
 
         $this->addClause('WHERE', $instance, '', 'WHERE ', '');
 
@@ -143,7 +151,7 @@ class Sqlbuilder
      */
     public function addOrWhere()
     {
-        $instance = new \Octris\Sqlbuilder\Where('OR');
+        $instance = new \Octris\Sqlbuilder\Where($this, 'OR');
 
         $this->addClause('WHERE', $instance, '', 'WHERE ', '');
 
@@ -179,7 +187,9 @@ class Sqlbuilder
         }, $sql);
 
         $stmt = $this->cn->prepare($sql);
-        $stmt->bindParam($types, $values);
+
+        if (count($values) > 0)
+            $stmt->bindParam($types, $values);
 
         return $stmt->execute();
     }

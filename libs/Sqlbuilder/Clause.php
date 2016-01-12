@@ -40,6 +40,14 @@ class Clause
 
     public function build()
     {
-        return $this->prefix . (!is_null($this->instance) ? $this->instance->build() : '') . $this->postfix;
+        if (!is_null($this->instance)) {
+            $return = $this->instance->build();
+
+            $return = ($return == '' ? '' : $this->prefix . $return . $this->postfix);
+        } else {
+            $return = $this->prefix . $this->postfix;
+        }
+
+        return $return;
     }
 }
