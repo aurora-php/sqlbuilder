@@ -46,21 +46,22 @@ class Template
     }
 
     /**
-     * Render template to a string.
+     * Resolve SQL statement.
      *
-     * @return  string                                          Rendered template.
+     * @param   array                               $param      Optional query parameters.
+     * @return  string                                          Resolved SQL statement.
      */
-    public function __toString()
+    public function resolveSql(array $param = array())
     {
-        $sql = preg_replace_callback('|/\*\*(.+?)\*\*/|', function($match) {
+        $sql = preg_replace_callback('|/\*\*(.+?)\*\*/|', function($match) use ($param) {
             $name = trim($match[1]);
-
-            $snippet = $this->builder->build($name);
-
+            
+            $snippet = $this->builder->resolveSnippet($name, $param);
+            
             return $snippet;
         }, $this->sql);
 
-        var_dump($sql);
+        ddump($sql);
 
         return $sql;
     }
