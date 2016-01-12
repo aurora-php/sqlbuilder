@@ -19,35 +19,66 @@ namespace Octris\Sqlbuilder;
  */
 class Clauses
 {
-    protected $instance;
-
+    /**
+     * String to use for joining multiple clauses.
+     *
+     * @type    string
+     */
     protected $joiner;
 
+    /**
+     * Prefix string for joined clauses.
+     *
+     * @type    string
+     */
     protected $prefix;
 
+    /**
+     * Postfix string for joined clauses.
+     *
+     * @type    string
+     */
     protected $postfix;
 
     /**
-     * Constructor.
+     * Clauses.
+     *
+     * @type    array
      */
-    public function __construct($instance, $joiner, $prefix, $postfix)
+    protected $clauses = array();
+
+    /**
+     * Constructor.
+     * 
+     * @param   string              $joiner                     String to use for joining multiple clauses.
+     * @param   string              $prefix                     Prefix string for joined clauses.
+     * @param   string              $postfix                    Postfix string for joined clauses.
+     */
+    public function __construct($joiner, $prefix, $postfix)
     {
-        $this->instance = $instance;
         $this->joiner = $joiner;
         $this->prefix = $prefix;
         $this->postfix = $postfix;
     }
 
-    public function build()
+    /**
+     * Build string representation of clauses.
+     * 
+     * @return  string                                          String.
+     */
+    public function __toString()
     {
-        if (!is_null($this->instance)) {
-            $return = $this->instance->build();
+    }
 
-            $return = ($return == '' ? '' : $this->prefix . $return . $this->postfix);
-        } else {
-            $return = $this->prefix . $this->postfix;
-        }
-
-        return $return;
+    /**
+     * Add a clause to the list of clauses.
+     * 
+     * @param   string              $sql                        SQL of clause to add.
+     */
+    public function add($sql)
+    {
+        $this->clauses[] = [
+            'sql' => $sql
+        ];
     }
 }

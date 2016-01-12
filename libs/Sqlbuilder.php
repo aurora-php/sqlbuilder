@@ -27,6 +27,13 @@ class Sqlbuilder
     protected $cn;
 
     /**
+     * Instance of SQL dialect class.
+     *
+     * @type    \Octris\Sqlbuilder\Dialect
+     */
+    protected $dialect;
+
+    /**
      * Parameters for prepared SQL statement.
      *
      * @type    array
@@ -55,6 +62,10 @@ class Sqlbuilder
      */
     public function __construct(\Octris\Core\Db\Device\IConnection $cn, array $data = array())
     {
+        if (!($cn instanceof \Octris\Core\Db\Device\IDialect)) {
+            throw new \InvalidArgumentException(get_class($cn) . ' must be a member of "\Octris\Core\Db\Device\IDialect"');
+        }
+        
         $this->cn = $cn;
         $this->data = $data;
     }
@@ -79,22 +90,14 @@ class Sqlbuilder
     }
 
     /**
-     *
-     */
-    public function isExist($name)
-    {
-        return isset($this->data[$name]);
-    }
-
-    /**
-     * Add a textual snippet.
+     * Add a textual template snippet.
      *
      * @param   string                              $name       Name of snippet to add.
      * @param   string                              $snippet    Snippet content to add.
      */
     public function addSnippet($name, $snippet)
     {
-        $this->snippets[$name] = $snippet;
+        $this->snippets[strtoupper($name)] = $snippet;
     }
 
     /**
@@ -114,48 +117,46 @@ class Sqlbuilder
      * Add clause.
      *
      * @param   string              $name                       Name of clause to add.
+     * @param   string              $sql                        SQL snippet of clause.
+     * @param   string              $joiner                     String to use for joining multiple clauses of the same name.
+     * @param   string              $prefix                     Prefix string for joined clauses.
+     * @param   string              $postfix                    Postfix string for joined clauses.
      */
-    protected function addClause($name, $instance, $joiner, $prefix, $postfix)
+    protected function addClause($name, $sql, $joiner, $prefix, $postfix, $is_inclusive)
     {
-        $this->clauses[$name] = new \Octris\Sqlbuilder\Clause($instance, $joiner, $prefix, $postfix);
+        $name = strtoupper($name);
+        
+        if (!isset($this->clauses[$name])) {
+            $this->clauses[$name] = new \Octris\Sqlbuilder\Clauses($joiner, $prefix, $postfix);
+        }
+        
+        $this->clauses[$name]->addClause($sql, $is_inclusive);
     }
 
     /**
-     * Add where clauses, alias for addAndWhere.
+     * Add an 'AND' condition.
      *
-     * @return  \Octris\Sqlbuilder\Where                        Instance of "where" group.
+     * @param   string                      $sql    SQL snippet for where condition.
+     * @return  \Octris\Sqlbuilder                  This instance for method chaining.
      */
-    public function addWhere()
+    public function addAndWhere($sql)
     {
-        return $this->addAndWhere();
+        $this->addClause('WHERE', $sql, ' AND ', 'WHERE ', "\n", false);
+
+        rerturn $this;
     }
 
     /**
-     * Add an 'AND' condition group.
+     * Add an 'OR' condition.
      *
-     * @return \Octris\Sqlbuilder\Where             New and nested instance of "where" condition group.
+     * @param   string                      $sql    SQL snippet for where condition.
+     * @return  \Octris\Sqlbuilder                  This instance for method chaining.
      */
-    public function addAndWhere()
+    public function addOrWhere($sql)
     {
-        $instance = new \Octris\Sqlbuilder\Where($this, 'AND');
+        $this->addClause('WHERE', $sql, ' AND ', 'WHERE ', "\n", true);
 
-        $this->addClause('WHERE', $instance, '', 'WHERE ', '');
-
-        return $instance;
-    }
-
-    /**
-     * Add an 'OR' condition group.
-     *
-     * @return \Octris\Sqlbuilder\Where             New and nested instance of "where" condition group.
-     */
-    public function addOrWhere()
-    {
-        $instance = new \Octris\Sqlbuilder\Where($this, 'OR');
-
-        $this->addClause('WHERE', $instance, '', 'WHERE ', '');
-
-        return $instance;
+        rerturn $this;
     }
 
     /**
@@ -166,11 +167,17 @@ class Sqlbuilder
      */
     public function addPaging($page, $limit)
     {
-        $this->addClause('PAGING', null, '', sprintf('LIMIT %d, %d', ($page - 1) * $limit, $limit), '');
+        if (isset($this->clauses[$name])) {
+            throw new \Exception('Only one paging can be defined');
+        }
+            
+        $this->addClause('PAGING', $this->cn->getLimitString(($page - 1) * $limit, $limit), '', '', "\n");
     }
 
     /**
-     * Execute SQL statement.
+     * Build and execute SQL statement.
+     * 
+     * @return  \Octris\Core\Db\Device\IResult|null             Result or null if no result set was produced by query.
      */
     public function execute(\Octris\Sqlbuilder\Template $tpl)
     {
@@ -188,8 +195,9 @@ class Sqlbuilder
 
         $stmt = $this->cn->prepare($sql);
 
-        if (count($values) > 0)
+        if (count($values) > 0) {
             $stmt->bindParam($types, $values);
+        }
 
         return $stmt->execute();
     }
