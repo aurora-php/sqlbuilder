@@ -45,7 +45,7 @@ class Clauses
      *
      * @type    array
      */
-    protected $clauses = array();
+    protected $clauses;
 
     /**
      * Constructor.
@@ -59,26 +59,66 @@ class Clauses
         $this->joiner = $joiner;
         $this->prefix = $prefix;
         $this->postfix = $postfix;
+        
+        $this->clauses = [
+            true => [],
+            false => []
+        ];
     }
 
     /**
-     * Build string representation of clauses.
-     * 
-     * @return  string                                          String.
+     * Resolve clauses.
+     *
+     * @param   array                               $param      Optional query parameters.
+     * @return  string                                          Resolved template snippet.
      */
-    public function __toString()
+    public function resolveClauses(array $param = array())
     {
+        $filter = function($clause) use ($param) {
+            if (($is_exist = (preg_match_all('/@(?P<type>.):(?P<name>.+?)@/', $clause, $match) > 0))) {
+                foreach ($match['name'] as $name) {
+                    if (!($is_exist = isset($param[$name]))) {
+                        // all fields must be available
+                        break;
+                    }
+                }
+            }
+            
+            return $is_exist;
+        };
+        
+        $clauses = [
+            true => array_filter($this->clauses[true], $filter),
+            false => array_filter($this->clauses[false], $filter)
+        ];
+        
+        if (count($clauses[true]) > 0) {
+            $snippet = $this->prefix . implode(
+                $this->joiner,
+                array_merge(
+                    $clauses[false],
+                    [
+                        ' ( ' . implode(' OR ', $clauses[true]) . ' ) '
+                    ]
+                )
+            ) . $this->postfix;
+        } elseif (count($clauses[false]) > 0) {
+            $snippet = $this->prefix . implode($this->joiner, $clauses[false]) . $this->postfix;
+        } else {
+            $snippet = '';
+        }
+        
+        return $snippet;
     }
 
     /**
      * Add a clause to the list of clauses.
      * 
      * @param   string              $sql                        SQL of clause to add.
+     * @param   bool                $is_inclusive               Clause mode.
      */
-    public function add($sql)
+    public function addClause($sql, $is_inclusive)
     {
-        $this->clauses[] = [
-            'sql' => $sql
-        ];
+        $this->clauses[$is_inclusive][] = $sql;
     }
 }
