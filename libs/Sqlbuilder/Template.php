@@ -46,11 +46,22 @@ class Template
     }
 
     /**
-     * Prepare template.
+     * Render template to a string.
+     *
+     * @return  string                                          Rendered template.
      */
-    public function prepare()
+    public function __toString()
     {
         $sql = preg_replace_callback('|/\*\*(.+?)\*\*/|', function($match) {
+            $name = trim($match[1]);
+
+            $snippet = $this->builder->build($name);
+
+            return $snippet;
         }, $this->sql);
+
+        var_dump($sql);
+
+        return $sql;
     }
 }

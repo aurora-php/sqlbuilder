@@ -57,6 +57,18 @@ class Where
     }
 
     /**
+     * Render "where" conditions to snippet.
+     *
+     * @return  string                              Rendered snippet.
+     */
+    public function build()
+    {
+        $return = '(' . implode(' ' . $this->type . ' ', $this->clauses) . ')';
+
+        return $return;
+    }
+
+    /**
      * Add an 'AND' condition group.
      *
      * @return \Octris\Sqlbuilder\Where             New and nested instance of "where" condition group.

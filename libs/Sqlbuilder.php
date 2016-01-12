@@ -27,6 +27,20 @@ class Sqlbuilder
     protected $cn;
 
     /**
+     * Parameters for prepared SQL statement.
+     *
+     * @type    array
+     */
+    protected $data;
+
+    /**
+     * Template snippets.
+     *
+     * @type    array
+     */
+    protected $snippets = array();
+
+    /**
      * Clauses.
      *
      * @type    array
@@ -37,10 +51,42 @@ class Sqlbuilder
      * Constructor.
      *
      * @param   \Octris\Core\Db\Device\IConnection  $cn         Database connection to use with generated sql statement.
+     * @param   array                               $data       Optional parameters for prepared SQL statement.
      */
-    public function __construct(\Octris\Core\Db\Device\IConnection $cn)
+    public function __construct(\Octris\Core\Db\Device\IConnection $cn, array $data = array())
     {
         $this->cn = $cn;
+        $this->data = $data;
+    }
+
+    /**
+     * Build template snippet.
+     *
+     * @param   string                              $name       Name of snippet to return.
+     * @return  string                                          Template snippet.
+     */
+    public function build($name)
+    {
+        if (isset($this->clauses[$name])) {
+            $return = $this->clauses[$name]->build();
+        } elseif (isset($this->snippets[$name])) {
+            $return = $this->snippets[$name];
+        } else {
+            $return = '';
+        }
+
+        return $return;
+    }
+
+    /**
+     * Add a textual snippet.
+     *
+     * @param   string                              $name       Name of snippet to add.
+     * @param   string                              $snippet    Snippet content to add.
+     */
+    public function addSnippet($name, $snippet)
+    {
+        $this->snippets[$name] = $snippet;
     }
 
     /**
@@ -51,7 +97,19 @@ class Sqlbuilder
      */
     public function addTemplate($sql)
     {
-        return new \Octris\Sqlbuilder\Template($this, $sql);
+        $instance = new \Octris\Sqlbuilder\Template($this, $sql);
+
+        return $instance;
+    }
+
+    /**
+     * Add clause.
+     *
+     * @param   string              $name                       Name of clause to add.
+     */
+    protected function addClause($name, $instance, $joiner, $prefix, $postfix)
+    {
+        $this->clauses[$name] = new \Octris\Sqlbuilder\Clause($instance, $joiner, $prefix, $postfix);
     }
 
     /**
@@ -59,7 +117,7 @@ class Sqlbuilder
      *
      * @return  \Octris\Sqlbuilder\Where                        Instance of "where" group.
      */
-    public function addWhere();
+    public function addWhere()
     {
         return $this->addAndWhere();
     }
@@ -73,7 +131,7 @@ class Sqlbuilder
     {
         $instance = new \Octris\Sqlbuilder\Where('AND');
 
-        $this->clauses[] = $instance;
+        $this->addClause('WHERE', $instance, '', 'WHERE ', '');
 
         return $instance;
     }
@@ -87,8 +145,42 @@ class Sqlbuilder
     {
         $instance = new \Octris\Sqlbuilder\Where('OR');
 
-        $this->clauses[] = $instance;
+        $this->addClause('WHERE', $instance, '', 'WHERE ', '');
 
         return $instance;
+    }
+
+    /**
+     * Add paging clause.
+     *
+     * @param   int             $page               Page to start querying.
+     * @param   int             $limit              Limit rows to return.
+     */
+    public function addPaging($page, $limit)
+    {
+        $this->addClause('PAGING', null, '', sprintf('LIMIT %d, %d', ($page - 1) * $limit, $limit), '');
+    }
+
+    /**
+     * Execute SQL statement.
+     */
+    public function execute(\Octris\Sqlbuilder\Template $tpl)
+    {
+        $sql = (string)$tpl;
+
+        $types = '';
+        $values = [];
+
+        $sql = preg_replace_callback('/@(?P<type>.):(?P<name>.+?)@/', function($match) use (&$types, &$values) {
+            $types .= $match['type'];
+            $values[] = $this->data[$match['name']];
+
+            return '?';
+        }, $sql);
+
+        $stmt = $this->cn->prepare($sql);
+        $stmt->bindParam($types, $values);
+
+        return $stmt->execute();
     }
 }
