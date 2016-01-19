@@ -48,6 +48,13 @@ class Clauses
     protected $clauses;
 
     /**
+     * Parameters.
+     *
+     * @type    array
+     */
+    protected $parameters = array();
+
+    /**
      * Constructor.
      * 
      * @param   string              $joiner                     String to use for joining multiple clauses.
@@ -115,10 +122,13 @@ class Clauses
      * Add a clause to the list of clauses.
      * 
      * @param   string              $sql                        SQL of clause to add.
+     * @param   array               $parameters                 Parameters for clause.
      * @param   bool                $is_inclusive               Clause mode.
      */
-    public function addClause($sql, $is_inclusive)
+    public function addClause($sql, array $parameters, $is_inclusive)
     {
         $this->clauses[$is_inclusive][] = $sql;
+        
+        $this->parameters = array_merge($this->parameters, $parameters);
     }
 }
