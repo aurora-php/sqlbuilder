@@ -20,12 +20,14 @@ namespace Octris\Sqlbuilder\Dialect;
 class Mysql extends \Octris\Sqlbuilder\Dialect
 {
     /**
-     * Constructor.
+     * Return string for limiting result.
      * 
-     * @param   array               $attributes             Optional additional attributes to identify database.
+     * @param   int                     $limit              Limit result.
+     * @param   int                     $offset             Optional offset to start result at.
+     * @return  string                                      SQL snippet for limiting result.
      */
-    public function __construct(array $attributes = array())
+    public function getLimitString($limit, $offset = 0)
     {
-        parent::__construct(['version' => ''] + $attributes);
+        return sprintf('LIMIT %d, %d', $offset, $limit);
     }
 }
