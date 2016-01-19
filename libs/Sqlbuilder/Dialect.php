@@ -20,33 +20,11 @@ namespace Octris\Sqlbuilder;
 abstract class Dialect extends \Octris\Sqlbuilder
 {
     /**
-     * Database attributes.
-     *
-     * @type    array
-     */
-    protected $attributes;
-    
-    /**
-     * Constructor.
-     * 
-     * @param   array               $attributes             Optional additional attributes to identify database.
-     */
-    public function __construct(array $attributes = array())
-    {
-        $this->attributes = $attributes;
-    }
-    
-    /**
      * Return string for limiting result.
      * 
+     * @param   int                     $limit              Limit result.
+     * @param   int                     $offset             Optional offset to start result at.
      * @return  string                                      SQL snippet for limiting result.
      */
-    abstract public function getLimitString();
-
-    /**
-     * Return SQL snippet for counting result.
-     * 
-     * @return  string                                      SQL snippet for counting result.
-     */
-    abstract public function getCountString(); 
+    abstract public function getLimitString($limit, $offset = 0);
 }
