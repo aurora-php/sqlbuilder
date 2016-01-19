@@ -20,13 +20,6 @@ namespace Octris;
 class Sqlbuilder
 {
     /**
-     * Database connection.
-     *
-     * @type    \Octris\Core\Db\Device\IConnection
-     */
-    protected $cn;
-
-    /**
      * Instance of SQL dialect class.
      *
      * @type    \Octris\Sqlbuilder\Dialect
@@ -50,15 +43,11 @@ class Sqlbuilder
     /**
      * Constructor.
      *
-     * @param   \Octris\Core\Db\Device\IConnection  $cn         Database connection to use with generated sql statement.
+     * @param   \Octris\Sqlbuilder\Dialect          $dialect    SQL dialect to use.
      */
-    public function __construct(\Octris\Core\Db\Device\IConnection $cn)
+    public function __construct(\Octris\Sqlbuilder\Dialect $dialect)
     {
-        if (!($cn instanceof \Octris\Core\Db\Device\IDialect)) {
-            throw new \InvalidArgumentException(get_class($cn) . ' must be a member of "\Octris\Core\Db\Device\IDialect"');
-        }
-
-        $this->cn = $cn;
+        $this->dialect = $dialect;
     }
 
     /**
@@ -115,12 +104,13 @@ class Sqlbuilder
      *
      * @param   string              $name                       Name of clause to add.
      * @param   string              $sql                        SQL snippet of clause.
+     * @param   array               $parameters                 Parameters for clause.
      * @param   string              $joiner                     String to use for joining multiple clauses of the same name.
-     * @param   string              $prefix                     Prefix string for joined clauses.
-     * @param   string              $postfix                    Postfix string for joined clauses.
-     * @param   bool                $is_inclusive               Clause mode.
+     * @param   string              $prefix                     Optional prefix string for joined clauses.
+     * @param   string              $postfix                    Optional postfix string for joined clauses.
+     * @param   bool                $is_inclusive               Optional clause mode.
      */
-    protected function addClause($name, $sql, $joiner, $prefix, $postfix, $is_inclusive)
+    protected function addClause($name, $sql, array $parameters, $joiner, $prefix = '', $postfix = '', $is_inclusive = false)
     {
         $name = strtoupper($name);
 
@@ -128,42 +118,101 @@ class Sqlbuilder
             $this->clauses[$name] = new \Octris\Sqlbuilder\Clauses($joiner, $prefix, $postfix);
         }
 
-        $this->clauses[$name]->addClause($sql, $is_inclusive);
+        $this->clauses[$name]->addClause($sql, $parameters, $is_inclusive);
     }
 
     /**
      * Columns for eg.: INSERT/UPDATE
      *
-     * @param   string                      $sql
-     * @return  \Octris\Sqlbuilder                  This instance for method chaining.
+     * @param   string                      $sql            SQL snippet of column.
+     * @param   array                       $parameters     Optional parameters for 'where' clause.
+     * @return  \Octris\Sqlbuilder                          This instance for method chaining.
      */
-    public function addColumn($sql)
+    public function addColumn($sql, array $parameters = array())
     {
-        $this->addClause('COLUMN', $sql, ', ', '', "\n", false);
+        $this->addClause('COLUMN', $sql, $parameters, ', ', '', "\n", false);
 
         return $this;
     }
 
     /**
+     * Add an 'inner join' clause.
+     *
+     * @param   string                      $sql            SQL snippet for 'inner join'.
+     * @param   array                       $parameters     Optional parameters for 'inner join' clause.
+     * @return  \Octris\Sqlbuilder                          This instance for method chaining.
+     */
+    public function addInnerJoin($sql, array $parameters = array())
+    {
+        $this->addClause('INNERJOIN', $sql, $parameters, "\nINNER JOIN ", "\nINNER JOIN ", "\n", false);
+        
+        return $this;
+    }
+
+    /**
+     * Add an 'join' clause (alias for 'inner join').
+     *
+     * @param   string                      $sql            SQL snippet for 'join'.
+     * @param   array                       $parameters     Optional parameters for 'join' clause.
+     * @return  \Octris\Sqlbuilder                          This instance for method chaining.
+     */
+    public function addJoin($sql, array $parameters = array())
+    {
+        $this->addClause('JOIN', $sql, $parameters, "\nJOIN ", "\nJOIN ", "\n", false);
+        
+        return $this;
+    }
+
+    /**
+     * Add a 'left join' clause.
+     *
+     * @param   string                      $sql            SQL snippet for 'left join'.
+     * @param   array                       $parameters     Optional parameters for 'left join' clause.
+     * @return  \Octris\Sqlbuilder                          This instance for method chaining.
+     */
+    public function addLeftJoin($sql, array $parameters = array())
+    {
+        $this->addClause('LEFTJOIN', $sql, $parameters, "\nLEFT JOIN ", "\nLEFT JOIN ", "\n", false);
+        
+        return $this;
+    }
+
+    /**
+     * Add a 'right join' clause.
+     *
+     * @param   string                      $sql            SQL snippet for 'right join'.
+     * @param   array                       $parameters     Optional parameters for 'right' clause.
+     * @return  \Octris\Sqlbuilder                          This instance for method chaining.
+     */
+    public function addInnerJoin($sql, array $parameters = array())
+    {
+        $this->addClause('RIGHTJOIN', $sql, $parameters, "\nRIGHT JOIN ", "\nRIGHT JOIN ", "\n", false);
+        
+        return $this;
+    }
+        
+    /**
      * Add an 'AND' condition. This method is an alias for "addAndWhere".
      *
-     * @param   string                      $sql    SQL snippet for where condition.
-     * @return  \Octris\Sqlbuilder                  This instance for method chaining.
+     * @param   string                      $sql            SQL snippet for 'where' condition.
+     * @param   array                       $parameters     Optional parameters for 'where' clause.
+     * @return  \Octris\Sqlbuilder                          This instance for method chaining.
      */
-    public function addWhere($sql)
+    public function addWhere($sql, array $parameters = array())
     {
-        return $this->addAndWhere($sql);
+        return $this->addAndWhere($sql, $parameters);
     }
 
     /**
      * Add an 'AND' condition.
      *
-     * @param   string                      $sql    SQL snippet for where condition.
-     * @return  \Octris\Sqlbuilder                  This instance for method chaining.
+     * @param   string                      $sql            SQL snippet for 'where' condition.
+     * @param   array                       $parameters     Optional parameters for 'where' clause.
+     * @return  \Octris\Sqlbuilder                          This instance for method chaining.
      */
-    public function addAndWhere($sql)
+    public function addAndWhere($sql, array $parameters = array())
     {
-        $this->addClause('WHERE', $sql, ' AND ', 'WHERE ', "\n", false);
+        $this->addClause('WHERE', $sql, $parameters, ' AND ', 'WHERE ', "\n", false);
 
         return $this;
     }
@@ -171,30 +220,69 @@ class Sqlbuilder
     /**
      * Add an 'OR' condition.
      *
-     * @param   string                      $sql    SQL snippet for where condition.
-     * @return  \Octris\Sqlbuilder                  This instance for method chaining.
+     * @param   string                      $sql            SQL snippet for 'where' condition.
+     * @param   array                       $parameters     Optional parameters for 'where' clause.
+     * @return  \Octris\Sqlbuilder                          This instance for method chaining.
      */
-    public function addOrWhere($sql)
+    public function addOrWhere($sql, array $parameters = array())
     {
-        $this->addClause('WHERE', $sql, ' AND ', 'WHERE ', "\n", true);
+        $this->addClause('WHERE', $sql, $parameters, ' AND ', 'WHERE ', "\n", true);
 
         return $this;
     }
 
     /**
-     * Add paging clause.
+     * Add an 'order by' clause.
      *
-     * @param   int             $page               Page to start querying.
-     * @param   int             $limit              Limit rows to return.
-     * @return  \Octris\Sqlbuilder                  This instance for method chaining.
+     * @param   string                      $sql            SQL snippet for 'order by'.
+     * @param   array                       $parameters     Optional parameters for 'order by'.
+     * @return  \Octris\Sqlbuilder                          This instance for method chaining.
      */
-    public function addPaging($page, $limit)
+    public function addOrderBy($sql, array $parameters = array())
     {
-        if (isset($this->clauses['PAGING'])) {
-            throw new \Exception('Only one paging can be defined');
-        }
+        $this->addClause('ORDERBY', $sql, $parameters, ', ', 'ORDER BY ', "\n", false);
 
-        $this->addClause('PAGING', $this->cn->getLimitString(($page - 1) * $limit, $limit), '', '', "\n", false);
+        return $this;
+    }
+
+    /**
+     * Add a 'group by' clause.
+     *
+     * @param   string                      $sql            SQL snippet for 'group by'.
+     * @param   array                       $parameters     Optional parameters for 'group by'.
+     * @return  \Octris\Sqlbuilder                          This instance for method chaining.
+     */
+    public function addGroupBy($sql, array $parameters = array())
+    {
+        $this->addClause('GROUPBY', $sql, $parameters, ', ', 'GROUP BY ', "\n", false);
+
+        return $this;
+    }
+
+    /**
+     * Add a 'having' clause.
+     *
+     * @param   string                      $sql            SQL snippet for 'having'.
+     * @param   array                       $parameters     Optional parameters for 'having'.
+     * @return  \Octris\Sqlbuilder                          This instance for method chaining.
+     */
+    public function addHaving($sql, array $parameters = array())
+    {
+        $this->addClause('HAVING', $sql, $parameters, "\nAND ", 'HAVING ', "\n", false);
+
+        return $this;
+    }
+    
+    /**
+     * Add paging.
+     *
+     * @param   int                         $limit          Limit rows to return.
+     * @param   int                         $page           Optional page to start querying at.
+     * @return  \Octris\Sqlbuilder                          This instance for method chaining.
+     */
+    public function addPaging($limit, $page = 1)
+    {
+        $this->addClause('PAGING', $this->dialect->getLimitString(($page - 1) * $limit, $limit), '', '', "\n", false);
 
         return $this;
     }
