@@ -53,6 +53,7 @@ class Template
      */
     public function resolveSql(array $param = array())
     {
+        // sql statement from template
         $sql = preg_replace_callback('|/\*\*(.+?)\*\*/|', function($match) use ($param) {
             $name = trim($match[1]);
             
@@ -60,6 +61,17 @@ class Template
             
             return $snippet;
         }, $this->sql);
+
+        // resolve parameters
+        $types = '';
+        $values = [];
+
+        $sql = preg_replace_callback('/@(?P<type>.):(?P<name>.+?)@/', function($match) use (&$types, &$values, $param) {
+            $types .= $match['type'];
+            $values[] = $param[$match['name']];
+
+            return '?';
+        }, $sql);    
 
         return $sql;
     }
