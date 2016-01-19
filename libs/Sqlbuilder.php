@@ -288,6 +288,28 @@ class Sqlbuilder
     }
 
     /**
+     * Build SQL statement and parameter list.
+     * 
+     * @return
+     */
+    public function resolveSql()
+    {
+        $sql = $tpl->resolveSql($param);
+
+        $types = '';
+        $values = [];
+
+        $sql = preg_replace_callback('/@(?P<type>.):(?P<name>.+?)@/', function($match) use (&$types, &$values, $param) {
+            $types .= $match['type'];
+            $values[] = $param[$match['name']];
+
+            return '?';
+        }, $sql);
+        
+        var_dump($sql, )
+    }
+
+    /**
      * Build and execute SQL statement.
      *
      * @param   \Octris\Sqlbuilder\Template $tpl        $tpl        Template instance to transform into a SQL statement and execute.
