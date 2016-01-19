@@ -57,7 +57,7 @@ class Sqlbuilder
         if (!($cn instanceof \Octris\Core\Db\Device\IDialect)) {
             throw new \InvalidArgumentException(get_class($cn) . ' must be a member of "\Octris\Core\Db\Device\IDialect"');
         }
-        
+
         $this->cn = $cn;
     }
 
@@ -71,7 +71,7 @@ class Sqlbuilder
     public function resolveSnippet($name, array $param = array())
     {
         $name = strtoupper($name);
-        
+
         if (isset($this->clauses[$name])) {
             $return = $this->clauses[$name]->resolveClauses($param);
         } elseif (isset($this->snippets[$name])) {
@@ -93,7 +93,7 @@ class Sqlbuilder
     public function addSnippet($name, $snippet)
     {
         $this->snippets[strtoupper($name)] = $snippet;
-        
+
         return $this;
     }
 
@@ -123,12 +123,25 @@ class Sqlbuilder
     protected function addClause($name, $sql, $joiner, $prefix, $postfix, $is_inclusive)
     {
         $name = strtoupper($name);
-        
+
         if (!isset($this->clauses[$name])) {
             $this->clauses[$name] = new \Octris\Sqlbuilder\Clauses($joiner, $prefix, $postfix);
         }
-        
+
         $this->clauses[$name]->addClause($sql, $is_inclusive);
+    }
+
+    /**
+     * Columns for eg.: INSERT/UPDATE
+     *
+     * @param   string                      $sql
+     * @return  \Octris\Sqlbuilder                  This instance for method chaining.
+     */
+    public function addColumn($sql)
+    {
+        $this->addClause('COLUMN', $sql, ', ', '', "\n", false);
+
+        return $this;
     }
 
     /**
@@ -180,15 +193,15 @@ class Sqlbuilder
         if (isset($this->clauses['PAGING'])) {
             throw new \Exception('Only one paging can be defined');
         }
-            
+
         $this->addClause('PAGING', $this->cn->getLimitString(($page - 1) * $limit, $limit), '', '', "\n", false);
-        
+
         return $this;
     }
 
     /**
      * Build and execute SQL statement.
-     * 
+     *
      * @param   \Octris\Sqlbuilder\Template $tpl        $tpl        Template instance to transform into a SQL statement and execute.
      * @param   array                                   $param      Optional query parameters.
      * @return  \Octris\Core\Db\Device\IResult|null                 Result or null if no result set was produced by query.
