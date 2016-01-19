@@ -132,6 +132,19 @@ class Sqlbuilder
     }
 
     /**
+     * Columns for eg.: INSERT/UPDATE
+     * 
+     * @param   string                      $sql    
+     * @return  \Octris\Sqlbuilder                  This instance for method chaining.
+     */
+    public function addColumn($sql)
+    {
+        $this->addClause('COLUMN', $sql, ', ', '', "\n", false);
+        
+        return $this;
+    }
+
+    /**
      * Add an 'AND' condition. This method is an alias for "addAndWhere".
      *
      * @param   string                      $sql    SQL snippet for where condition.
