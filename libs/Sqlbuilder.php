@@ -184,7 +184,7 @@ class Sqlbuilder
      * @param   array                       $parameters     Optional parameters for 'right' clause.
      * @return  \Octris\Sqlbuilder                          This instance for method chaining.
      */
-    public function addInnerJoin($sql, array $parameters = array())
+    public function addRightJoin($sql, array $parameters = array())
     {
         $this->addClause('RIGHTJOIN', $sql, $parameters, "\nRIGHT JOIN ", "\nRIGHT JOIN ", "\n", false);
         
@@ -282,7 +282,7 @@ class Sqlbuilder
      */
     public function addPaging($limit, $page = 1)
     {
-        $this->addClause('PAGING', $this->dialect->getLimitString(($page - 1) * $limit, $limit), '', '', "\n", false);
+        $this->addClause('PAGING', $this->dialect->getLimitString(($page - 1) * $limit, $limit), [], '', '', "\n", false);
 
         return $this;
     }

@@ -17,7 +17,7 @@ namespace Octris\Sqlbuilder;
  * @copyright   copyright (c) 2016 by Harald Lapp
  * @author      Harald Lapp <harald@octris.org>
  */
-abstract class Dialect extends \Octris\Sqlbuilder
+abstract class Dialect
 {
     /**
      * Return string for limiting result.
