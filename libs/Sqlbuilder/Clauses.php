@@ -56,7 +56,7 @@ class Clauses
 
     /**
      * Constructor.
-     * 
+     *
      * @param   string              $joiner                     String to use for joining multiple clauses.
      * @param   string              $prefix                     Prefix string for joined clauses.
      * @param   string              $postfix                    Postfix string for joined clauses.
@@ -66,7 +66,7 @@ class Clauses
         $this->joiner = $joiner;
         $this->prefix = $prefix;
         $this->postfix = $postfix;
-        
+
         $this->clauses = [
             true => [],
             false => []
@@ -76,51 +76,32 @@ class Clauses
     /**
      * Resolve clauses.
      *
-     * @param   array                               $param      Optional query parameters.
-     * @return  string                                          Resolved template snippet.
+     * @return  array                                           Array of resolved template snippet and parameters.
      */
-    public function resolveClauses(array $param = array())
+    public function resolveClauses()
     {
-        $filter = function($clause) use ($param) {
-            if (($is_exist = (preg_match_all('/@(?P<type>.):(?P<name>.+?)@/', $clause, $match) > 0))) {
-                foreach ($match['name'] as $name) {
-                    if (!($is_exist = isset($param[$name]))) {
-                        // all fields must be available
-                        break;
-                    }
-                }
-            }
-            
-            return $is_exist;
-        };
-        
-        $clauses = [
-            true => array_filter($this->clauses[true], $filter),
-            false => array_filter($this->clauses[false], $filter)
-        ];
-        
-        if (count($clauses[true]) > 0) {
+        if (count($this->clauses[true]) > 0) {
             $snippet = $this->prefix . implode(
                 $this->joiner,
                 array_merge(
-                    $clauses[false],
+                    $this->clauses[false],
                     [
-                        ' ( ' . implode(' OR ', $clauses[true]) . ' ) '
+                        ' ( ' . implode(' OR ', $this->clauses[true]) . ' ) '
                     ]
                 )
             ) . $this->postfix;
-        } elseif (count($clauses[false]) > 0) {
-            $snippet = $this->prefix . implode($this->joiner, $clauses[false]) . $this->postfix;
+        } elseif (count($this->clauses[false]) > 0) {
+            $snippet = $this->prefix . implode($this->joiner, $this->clauses[false]) . $this->postfix;
         } else {
             $snippet = '';
         }
-        
-        return $snippet;
+
+        return [$snippet, $this->parameters];
     }
 
     /**
      * Add a clause to the list of clauses.
-     * 
+     *
      * @param   string              $sql                        SQL of clause to add.
      * @param   array               $parameters                 Parameters for clause.
      * @param   bool                $is_inclusive               Clause mode.
@@ -128,7 +109,7 @@ class Clauses
     public function addClause($sql, array $parameters, $is_inclusive)
     {
         $this->clauses[$is_inclusive][] = $sql;
-        
+
         $this->parameters = array_merge($this->parameters, $parameters);
     }
 }

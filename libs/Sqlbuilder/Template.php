@@ -48,17 +48,16 @@ class Template
     /**
      * Resolve SQL statement.
      *
-     * @param   array                               $param      Optional query parameters.
      * @return  string                                          Resolved SQL statement.
      */
-    public function resolveSql(array $param = array())
+    public function resolveSql()
     {
         // sql statement from template
         $sql = preg_replace_callback('|/\*\*(.+?)\*\*/|', function($match) use ($param) {
             $name = trim($match[1]);
-            
+
             $snippet = $this->builder->resolveSnippet($name, $param);
-            
+
             return $snippet;
         }, $this->sql);
 
@@ -71,7 +70,7 @@ class Template
             $values[] = $param[$match['name']];
 
             return '?';
-        }, $sql);    
+        }, $sql);
 
         return $sql;
     }

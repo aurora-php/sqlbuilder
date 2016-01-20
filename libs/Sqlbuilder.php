@@ -54,22 +54,22 @@ class Sqlbuilder
      * Resolve template snippet.
      *
      * @param   string                              $name       Name of snippet to resolve.
-     * @param   array                               $param      Optional query parameters.
-     * @return  string                                          Resolved template snippet.
+     * @return  array                                           Array of resolved template snippet and parameters.
      */
-    public function resolveSnippet($name, array $param = array())
+    public function resolveSnippet($name)
     {
         $name = strtoupper($name);
+        $parameters = [];
 
         if (isset($this->clauses[$name])) {
-            $return = $this->clauses[$name]->resolveClauses($param);
+            list($snippet, $parameters) = $this->clauses[$name]->resolveClauses($param);
         } elseif (isset($this->snippets[$name])) {
-            $return = $this->snippets[$name];
+            $snippet = $this->snippets[$name];
         } else {
-            $return = '';
+            $snippet = '';
         }
 
-        return $return;
+        return [$snippet, $parameters];
     }
 
     /**
@@ -145,7 +145,7 @@ class Sqlbuilder
     public function addInnerJoin($sql, array $parameters = array())
     {
         $this->addClause('INNERJOIN', $sql, $parameters, "\nINNER JOIN ", "\nINNER JOIN ", "\n", false);
-        
+
         return $this;
     }
 
@@ -159,7 +159,7 @@ class Sqlbuilder
     public function addJoin($sql, array $parameters = array())
     {
         $this->addClause('JOIN', $sql, $parameters, "\nJOIN ", "\nJOIN ", "\n", false);
-        
+
         return $this;
     }
 
@@ -173,7 +173,7 @@ class Sqlbuilder
     public function addLeftJoin($sql, array $parameters = array())
     {
         $this->addClause('LEFTJOIN', $sql, $parameters, "\nLEFT JOIN ", "\nLEFT JOIN ", "\n", false);
-        
+
         return $this;
     }
 
@@ -187,10 +187,10 @@ class Sqlbuilder
     public function addRightJoin($sql, array $parameters = array())
     {
         $this->addClause('RIGHTJOIN', $sql, $parameters, "\nRIGHT JOIN ", "\nRIGHT JOIN ", "\n", false);
-        
+
         return $this;
     }
-        
+
     /**
      * Add an 'AND' condition. This method is an alias for "addAndWhere".
      *
@@ -272,7 +272,7 @@ class Sqlbuilder
 
         return $this;
     }
-    
+
     /**
      * Add paging.
      *
