@@ -84,7 +84,9 @@ class Clauses
         $parameters = array_merge($parameters, $this->parameters);
 
         $filter = function($clause) use ($parameters) {
-            if (($is_exist = (preg_match_all('/@(?P<type>.):(?P<name>.+?)@/', $clause, $match) > 0))) {
+            $is_exist = true;
+            
+            if (preg_match_all('/@(?P<type>.):(?P<name>.+?)@/', $clause, $match) > 0) {
                 foreach ($match['name'] as $name) {
                     if (!($is_exist = isset($parameters[$name]))) {
                         // all fields must be available
