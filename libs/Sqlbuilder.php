@@ -53,16 +53,17 @@ class Sqlbuilder
     /**
      * Resolve template snippet.
      *
-     * @param   string                              $name       Name of snippet to resolve.
+     * @param   string                      $name               Name of snippet to resolve.
+     * @param   array                       $parameters         Parameters for resolving snippet.
      * @return  array                                           Array of resolved template snippet and parameters.
      */
-    public function resolveSnippet($name)
+    public function resolveSnippet($name, array $parameters)
     {
         $name = strtoupper($name);
         $parameters = [];
 
         if (isset($this->clauses[$name])) {
-            list($snippet, $parameters) = $this->clauses[$name]->resolveClauses($param);
+            list($snippet, $parameters) = $this->clauses[$name]->resolveClauses($parameters);
         } elseif (isset($this->snippets[$name])) {
             $snippet = $this->snippets[$name];
         } else {
