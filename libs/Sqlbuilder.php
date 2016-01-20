@@ -282,7 +282,7 @@ class Sqlbuilder
      */
     public function addPaging($limit, $page = 1)
     {
-        $this->addClause('PAGING', $this->dialect->getLimitString(($page - 1) * $limit, $limit), [], '', '', "\n", false);
+        $this->addClause('PAGING', $this->dialect->getLimitString($limit, ($page - 1) * $limit), [], '', '', "\n", false);
 
         return $this;
     }
