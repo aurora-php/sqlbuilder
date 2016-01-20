@@ -48,15 +48,16 @@ class Template
     /**
      * Resolve SQL statement.
      *
+     * @param   array                       $parameters         Optional parameters for forming SQL statement.
      * @return  string                                          Resolved SQL statement.
      */
-    public function resolveSql()
+    public function resolveSql(array $parameters = array())
     {
         // sql statement from template
-        $sql = preg_replace_callback('|/\*\*(.+?)\*\*/|', function($match) use ($param) {
+        $sql = preg_replace_callback('|/\*\*(.+?)\*\*/|', function($match) use (&$parameters) {
             $name = trim($match[1]);
 
-            $snippet = $this->builder->resolveSnippet($name, $param);
+            list($snippet, $parameters) = $this->builder->resolveSnippet($name, $parameters);
 
             return $snippet;
         }, $this->sql);
@@ -65,13 +66,13 @@ class Template
         $types = '';
         $values = [];
 
-        $sql = preg_replace_callback('/@(?P<type>.):(?P<name>.+?)@/', function($match) use (&$types, &$values, $param) {
+        $sql = preg_replace_callback('/@(?P<type>.):(?P<name>.+?)@/', function($match) use (&$types, &$values, $parameters) {
             $types .= $match['type'];
-            $values[] = $param[$match['name']];
+            $values[] = $parameters[$match['name']];
 
             return '?';
         }, $sql);
 
-        return $sql;
+        return new Built($sql, $types, $values);
     }
 }
