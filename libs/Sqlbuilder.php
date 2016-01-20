@@ -60,7 +60,6 @@ class Sqlbuilder
     public function resolveSnippet($name, array $parameters)
     {
         $name = strtoupper($name);
-        $parameters = [];
 
         if (isset($this->clauses[$name])) {
             list($snippet, $parameters) = $this->clauses[$name]->resolveClauses($parameters);
