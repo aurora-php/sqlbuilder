@@ -79,7 +79,7 @@ class Clauses
      * @param   array                       $parameters         Parameters for resolving snippet.
      * @return  array                                           Array of resolved template snippet and parameters.
      */
-    public function resolveClauses(array $parameters)
+    public function resolveClauses(array &$parameters)
     {
         $parameters = array_merge($parameters, $this->parameters);
 
@@ -117,7 +117,7 @@ class Clauses
             $snippet = '';
         }
 
-        return [$snippet, $parameters];
+        return $snippet;
     }
 
     /**

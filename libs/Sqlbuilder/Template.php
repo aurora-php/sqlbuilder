@@ -57,7 +57,7 @@ class Template
         $sql = preg_replace_callback('|/\*\*(.+?)\*\*/|', function($match) use (&$parameters) {
             $name = trim($match[1]);
 
-            list($snippet, $parameters) = $this->builder->resolveSnippet($name, $parameters);
+            $snippet = $this->builder->resolveSnippet($name, $parameters);
 
             return $snippet;
         }, $this->sql);
@@ -73,6 +73,6 @@ class Template
             return '?';
         }, $sql);
 
-        return new Built($sql, $types, $values);
+        return (object)['sql' => $sql, 'types' => $types, 'parameters' => $values];
     }
 }
