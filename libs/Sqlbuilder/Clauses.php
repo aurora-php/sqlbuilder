@@ -76,27 +76,48 @@ class Clauses
     /**
      * Resolve clauses.
      *
+     * @param   array                       $parameters         Parameters for resolving snippet.
      * @return  array                                           Array of resolved template snippet and parameters.
      */
-    public function resolveClauses()
+    public function resolveClauses(array $parameters)
     {
-        if (count($this->clauses[true]) > 0) {
+        $parameters = array_merge($parameters, $this->parameters);
+
+        $filter = function($clause) use ($parameters) {
+            if (($is_exist = (preg_match_all('/@(?P<type>.):(?P<name>.+?)@/', $clause, $match) > 0))) {
+                foreach ($match['name'] as $name) {
+                    if (!($is_exist = isset($parameters[$name]))) {
+                        // all fields must be available
+                        break;
+                    }
+                }
+            }
+
+            return $is_exist;
+        };
+
+        $clauses = [
+            true => array_filter($this->clauses[true], $filter),
+            false => array_filter($this->clauses[false], $filter)
+        ];
+
+        if (count($clauses[true]) > 0) {
             $snippet = $this->prefix . implode(
                 $this->joiner,
                 array_merge(
-                    $this->clauses[false],
+                    $clauses[false],
                     [
-                        ' ( ' . implode(' OR ', $this->clauses[true]) . ' ) '
+                        ' ( ' . implode(' OR ', $clauses[true]) . ' ) '
                     ]
                 )
             ) . $this->postfix;
-        } elseif (count($this->clauses[false]) > 0) {
-            $snippet = $this->prefix . implode($this->joiner, $this->clauses[false]) . $this->postfix;
+        } elseif (count($clauses[false]) > 0) {
+            $snippet = $this->prefix . implode($this->joiner, $clauses[false]) . $this->postfix;
         } else {
             $snippet = '';
         }
 
-        return [$snippet, $this->parameters];
+        return [$snippet, $parameters];
     }
 
     /**
