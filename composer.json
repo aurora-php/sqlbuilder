@@ -1,8 +1,8 @@
 {
     "name":         "octris/sqlbuilder",
     "type":         "library",
-    "description":  "",
-    "keywords":     [],
+    "description":  "Build dynamic SQL queries with ease.",
+    "keywords":     [ "sql" ],
     "homepage":     "https://github.com/octris/sqlbuilder",
     "license":      "BSD-3-Clause",
 
