@@ -70,7 +70,7 @@ class Template
             $types .= $match['type'];
             $values[] = $parameters[$match['name']];
 
-            return '?';
+            return $this->builder->resolveParameter(count($values), $match['type'], $match['name']);
         }, $sql);
 
         return (object)['sql' => $sql, 'types' => $types, 'parameters' => $values];

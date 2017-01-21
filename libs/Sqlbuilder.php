@@ -73,6 +73,18 @@ class Sqlbuilder
     }
 
     /**
+     * Resolve query parameter.
+     *
+     * @param   int                                 $idx        Position of the parameter in the query.
+     * @param   string                              $type       Type of the parameter.
+     * @param   string                              $name       Name of the parameter.
+     */
+    public function resolveParameter($idx, $type, $name)
+    {
+        return '?';
+    }
+
+    /**
      * Add a textual template snippet.
      *
      * @param   string                              $name       Name of snippet to add.
