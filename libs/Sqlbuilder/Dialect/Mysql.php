@@ -14,7 +14,7 @@ namespace Octris\Sqlbuilder\Dialect;
 /**
  * MySQL dialect.
  *
- * @copyright   copyright (c) 2016 by Harald Lapp
+ * @copyright   copyright (c) 2016-2018 by Harald Lapp
  * @author      Harald Lapp <harald@octris.org>
  */
 class Mysql extends \Octris\Sqlbuilder\Dialect
@@ -29,5 +29,17 @@ class Mysql extends \Octris\Sqlbuilder\Dialect
     public function getLimitString($limit, $offset = 0)
     {
         return sprintf('LIMIT %d, %d', $offset, $limit);
+    }
+    
+    /**
+     * Resolve query parameter.
+     *
+     * @param   int                     $idx                Position of the parameter in the query.
+     * @param   string                  $type               Type of the parameter.
+     * @param   string                  $name               Name of the parameter.
+     */
+    public function resolveParameter($idx, $type, $name)
+    {
+        return '?';
     }
 }

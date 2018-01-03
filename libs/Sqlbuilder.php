@@ -14,7 +14,7 @@ namespace Octris;
 /**
  * SQL builder.
  *
- * @copyright   copyright (c) 2016 by Harald Lapp
+ * @copyright   copyright (c) 2016-2018 by Harald Lapp
  * @author      Harald Lapp <harald@octris.org>
  */
 class Sqlbuilder
@@ -81,7 +81,7 @@ class Sqlbuilder
      */
     public function resolveParameter($idx, $type, $name)
     {
-        return '?';
+        return $this->dialect->resolveParameter($idx, $type, $name);
     }
 
     /**
