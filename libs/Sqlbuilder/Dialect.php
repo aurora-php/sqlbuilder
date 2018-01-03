@@ -14,7 +14,7 @@ namespace Octris\Sqlbuilder;
 /**
  * SQL Dialects base class.
  *
- * @copyright   copyright (c) 2016 by Harald Lapp
+ * @copyright   copyright (c) 2016-2018 by Harald Lapp
  * @author      Harald Lapp <harald@octris.org>
  */
 abstract class Dialect
@@ -27,4 +27,13 @@ abstract class Dialect
      * @return  string                                      SQL snippet for limiting result.
      */
     abstract public function getLimitString($limit, $offset = 0);
+
+    /**
+     * Resolve query parameter.
+     *
+     * @param   int                     $idx                Position of the parameter in the query.
+     * @param   string                  $type               Type of the parameter.
+     * @param   string                  $name               Name of the parameter.
+     */
+    abstract public function resolveParameter($idx, $type, $name);
 }
