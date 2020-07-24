@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 /*
  * This file is part of the 'octris/sqlbuilder' package.
  *
@@ -22,7 +24,7 @@ class Mysql extends \Octris\Sqlbuilder\AbstractDialect
     /**
      * {@inheritDoc}
      */
-    public function getLimitString($limit, $offset = 0)
+    public function getLimitString(int $limit, int $offset = 0): string
     {
         return sprintf('LIMIT %d, %d', $offset, $limit);
     }
@@ -30,7 +32,7 @@ class Mysql extends \Octris\Sqlbuilder\AbstractDialect
     /**
      * {@inheritDoc}
      */
-    public function resolveParameter($idx, $type, $name)
+    public function resolveParameter(int $idx, string $type, string $name): string
     {
         return '?';
     }

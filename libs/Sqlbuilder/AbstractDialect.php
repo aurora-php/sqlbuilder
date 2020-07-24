@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 /*
  * This file is part of the 'octris/sqlbuilder' package.
  *
@@ -26,7 +28,7 @@ abstract class AbstractDialect
      * @param   int                     $offset             Optional offset to start result at.
      * @return  string                                      SQL snippet for limiting result.
      */
-    abstract public function getLimitString($limit, $offset = 0);
+    abstract public function getLimitString(int $limit, int $offset = 0): string;
 
     /**
      * Resolve query parameter.
@@ -36,5 +38,5 @@ abstract class AbstractDialect
      * @param   string                  $name               Name of the parameter.
      * @return  string
      */
-    abstract public function resolveParameter($idx, $type, $name);
+    abstract public function resolveParameter(int $idx, string $type, string $name): string;
 }

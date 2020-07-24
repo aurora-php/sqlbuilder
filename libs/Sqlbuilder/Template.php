@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 /*
  * This file is part of the 'octris/sqlbuilder' package.
  *
@@ -10,6 +12,8 @@
  */
 
 namespace Octris\Sqlbuilder;
+
+use \Octris\Sqlbuilder;
 
 /**
  * SQL builder template class.
@@ -24,14 +28,14 @@ class Template
      *
      * @var     \Octris\Sqlbuilder
      */
-    protected $builder;
+    protected Sqlbuilder $builder;
 
     /**
      * SQL template.
      *
      * @var     string
      */
-    protected $sql;
+    protected string $sql;
 
     /**
      * Constructor.
@@ -39,7 +43,7 @@ class Template
      * @param   \Octris\Sqlbuilder                  $builder    SQL builder instance.
      * @param   string                              $sql        SQL template to add.
      */
-    public function __construct(\Octris\Sqlbuilder $builder, $sql)
+    public function __construct(Sqlbuilder $builder, string $sql)
     {
         $this->builder = $builder;
         $this->sql = $sql;
@@ -49,9 +53,9 @@ class Template
      * Resolve SQL statement.
      *
      * @param   array                       $parameters         Optional parameters for forming SQL statement.
-     * @return  string                                          Resolved SQL statement.
+     * @return  object                                          Resolved SQL statement.
      */
-    public function resolveSql(array $parameters = array())
+    public function resolveSql(array $parameters = array()): object
     {
         // sql statement from template
         $sql = preg_replace_callback('|/\*\*(.+?)\*\*/|', function($match) use (&$parameters) {

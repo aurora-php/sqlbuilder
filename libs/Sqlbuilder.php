@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 /*
  * This file is part of the 'octris/sqlbuilder' package.
  *
@@ -10,6 +12,10 @@
  */
 
 namespace Octris;
+
+use \Octris\Sqlbuilder\AbstractDialect;
+use \Octris\Sqlbuilder\Clauses;
+use \Octris\Sqlbuilder\Template;
 
 /**
  * SQL builder.
@@ -24,28 +30,28 @@ class Sqlbuilder
      *
      * @var     AbstractDialect
      */
-    protected $dialect;
+    protected AbstractDialect $dialect;
 
     /**
      * Template snippets.
      *
      * @var     array
      */
-    protected $snippets = array();
+    protected array $snippets = [];
 
     /**
      * Clauses.
      *
      * @var     array
      */
-    protected $clauses = array();
+    protected array $clauses = [];
 
     /**
      * Constructor.
      *
      * @param   \Octris\Sqlbuilder\AbstractDialect          $dialect    SQL dialect to use.
      */
-    public function __construct(\Octris\Sqlbuilder\Dialect $dialect)
+    public function __construct(AbstractDialect $dialect)
     {
         $this->dialect = $dialect;
     }
@@ -57,7 +63,7 @@ class Sqlbuilder
      * @param   array                       $parameters         Parameters for resolving snippet.
      * @return  array                                           Resolved template snippet.
      */
-    public function resolveSnippet($name, array &$parameters)
+    public function resolveSnippet(string $name, array &$parameters): string
     {
         $name = strtoupper($name);
 
@@ -80,7 +86,7 @@ class Sqlbuilder
      * @param   string                              $name       Name of the parameter.
      * @return  string
      */
-    public function resolveParameter($idx, $type, $name)
+    public function resolveParameter(int $idx, string $type, string $name): string
     {
         return $this->dialect->resolveParameter($idx, $type, $name);
     }
@@ -92,7 +98,7 @@ class Sqlbuilder
      * @param   string                              $snippet    Snippet content to add.
      * @return  \Octris\Sqlbuilder                  This instance for method chaining.
      */
-    public function addSnippet($name, $snippet)
+    public function addSnippet(string $name, string $snippet): self
     {
         $this->snippets[strtoupper($name)] = $snippet;
 
@@ -105,9 +111,9 @@ class Sqlbuilder
      * @param   string                              $sql        SQL template to add.
      * @return  \Octris\Sqlbuilder\Template                     Instance of template class.
      */
-    public function addTemplate($sql)
+    public function addTemplate(string $sql): Template
     {
-        $instance = new \Octris\Sqlbuilder\Template($this, $sql);
+        $instance = Template($this, $sql);
 
         return $instance;
     }
@@ -123,12 +129,12 @@ class Sqlbuilder
      * @param   string              $postfix                    Optional postfix string for joined clauses.
      * @param   bool                $is_inclusive               Optional clause mode.
      */
-    protected function addClause($name, $sql, array $parameters, $joiner, $prefix = '', $postfix = '', $is_inclusive = false)
+    protected function addClause(string $name, string $sql, array $parameters, string $joiner, string $prefix = '', string $postfix = '', bool $is_inclusive = false)
     {
         $name = strtoupper($name);
 
         if (!isset($this->clauses[$name])) {
-            $this->clauses[$name] = new \Octris\Sqlbuilder\Clauses($joiner, $prefix, $postfix);
+            $this->clauses[$name] = new Clauses($joiner, $prefix, $postfix);
         }
 
         $this->clauses[$name]->addClause($sql, $parameters, $is_inclusive);
@@ -141,7 +147,7 @@ class Sqlbuilder
      * @param   array                       $parameters     Optional parameters for 'where' clause.
      * @return  \Octris\Sqlbuilder                          This instance for method chaining.
      */
-    public function addColumn($sql, array $parameters = array())
+    public function addColumn(string $sql, array $parameters = array()): self
     {
         $this->addClause('COLUMN', $sql, $parameters, ', ', '', "\n", false);
 
@@ -155,7 +161,7 @@ class Sqlbuilder
      * @param   array                       $parameters     Optional parameters for 'inner join' clause.
      * @return  \Octris\Sqlbuilder                          This instance for method chaining.
      */
-    public function addInnerJoin($sql, array $parameters = array())
+    public function addInnerJoin(string $sql, array $parameters = array()): self
     {
         $this->addClause('INNERJOIN', $sql, $parameters, "\nINNER JOIN ", "\nINNER JOIN ", "\n", false);
 
@@ -169,7 +175,7 @@ class Sqlbuilder
      * @param   array                       $parameters     Optional parameters for 'join' clause.
      * @return  \Octris\Sqlbuilder                          This instance for method chaining.
      */
-    public function addJoin($sql, array $parameters = array())
+    public function addJoin(string $sql, array $parameters = array()): self
     {
         $this->addClause('JOIN', $sql, $parameters, "\nJOIN ", "\nJOIN ", "\n", false);
 
@@ -183,7 +189,7 @@ class Sqlbuilder
      * @param   array                       $parameters     Optional parameters for 'left join' clause.
      * @return  \Octris\Sqlbuilder                          This instance for method chaining.
      */
-    public function addLeftJoin($sql, array $parameters = array())
+    public function addLeftJoin(string $sql, array $parameters = array()): self
     {
         $this->addClause('LEFTJOIN', $sql, $parameters, "\nLEFT JOIN ", "\nLEFT JOIN ", "\n", false);
 
@@ -197,7 +203,7 @@ class Sqlbuilder
      * @param   array                       $parameters     Optional parameters for 'right' clause.
      * @return  \Octris\Sqlbuilder                          This instance for method chaining.
      */
-    public function addRightJoin($sql, array $parameters = array())
+    public function addRightJoin(string $sql, array $parameters = array()): self
     {
         $this->addClause('RIGHTJOIN', $sql, $parameters, "\nRIGHT JOIN ", "\nRIGHT JOIN ", "\n", false);
 
@@ -211,7 +217,7 @@ class Sqlbuilder
      * @param   array                       $parameters     Optional parameters for 'where' clause.
      * @return  \Octris\Sqlbuilder                          This instance for method chaining.
      */
-    public function addWhere($sql, array $parameters = array())
+    public function addWhere(string $sql, array $parameters = array()): self
     {
         return $this->addAndWhere($sql, $parameters);
     }
@@ -223,7 +229,7 @@ class Sqlbuilder
      * @param   array                       $parameters     Optional parameters for 'where' clause.
      * @return  \Octris\Sqlbuilder                          This instance for method chaining.
      */
-    public function addAndWhere($sql, array $parameters = array())
+    public function addAndWhere(string $sql, array $parameters = array()): self
     {
         $this->addClause('WHERE', $sql, $parameters, ' AND ', 'WHERE ', "\n", false);
 
@@ -237,7 +243,7 @@ class Sqlbuilder
      * @param   array                       $parameters     Optional parameters for 'where' clause.
      * @return  \Octris\Sqlbuilder                          This instance for method chaining.
      */
-    public function addOrWhere($sql, array $parameters = array())
+    public function addOrWhere(string $sql, array $parameters = array()): self
     {
         $this->addClause('WHERE', $sql, $parameters, ' AND ', 'WHERE ', "\n", true);
 
@@ -251,7 +257,7 @@ class Sqlbuilder
      * @param   array                       $parameters     Optional parameters for 'order by'.
      * @return  \Octris\Sqlbuilder                          This instance for method chaining.
      */
-    public function addOrderBy($sql, array $parameters = array())
+    public function addOrderBy(string $sql, array $parameters = array()): self
     {
         $this->addClause('ORDERBY', $sql, $parameters, ', ', 'ORDER BY ', "\n", false);
 
@@ -265,7 +271,7 @@ class Sqlbuilder
      * @param   array                       $parameters     Optional parameters for 'group by'.
      * @return  \Octris\Sqlbuilder                          This instance for method chaining.
      */
-    public function addGroupBy($sql, array $parameters = array())
+    public function addGroupBy(string $sql, array $parameters = array()): self
     {
         $this->addClause('GROUPBY', $sql, $parameters, ', ', 'GROUP BY ', "\n", false);
 
@@ -279,7 +285,7 @@ class Sqlbuilder
      * @param   array                       $parameters     Optional parameters for 'having'.
      * @return  \Octris\Sqlbuilder                          This instance for method chaining.
      */
-    public function addHaving($sql, array $parameters = array())
+    public function addHaving(string $sql, array $parameters = array()): self
     {
         $this->addClause('HAVING', $sql, $parameters, "\nAND ", 'HAVING ', "\n", false);
 
@@ -293,7 +299,7 @@ class Sqlbuilder
      * @param   int                         $page           Optional page to start querying at.
      * @return  \Octris\Sqlbuilder                          This instance for method chaining.
      */
-    public function addPaging($limit, $page = 1)
+    public function addPaging(int $limit, int $page = 1): self
     {
         $this->addClause('PAGING', $this->dialect->getLimitString($limit, ($page - 1) * $limit), [], '', '', "\n", false);
 

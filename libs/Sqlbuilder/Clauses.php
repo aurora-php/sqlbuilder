@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 /*
  * This file is part of the 'octris/sqlbuilder' package.
  *
@@ -24,35 +26,35 @@ class Clauses
      *
      * @var     string
      */
-    protected $joiner;
+    protected string $joiner;
 
     /**
      * Prefix string for joined clauses.
      *
      * @var     string
      */
-    protected $prefix;
+    protected string $prefix;
 
     /**
      * Postfix string for joined clauses.
      *
      * @var     string
      */
-    protected $postfix;
+    protected string $postfix;
 
     /**
      * Clauses.
      *
      * @var     array
      */
-    protected $clauses;
+    protected array $clauses;
 
     /**
      * Parameters.
      *
      * @var     array
      */
-    protected $parameters = array();
+    protected array $parameters = array();
 
     /**
      * Constructor.
@@ -61,7 +63,7 @@ class Clauses
      * @param   string              $prefix                     Prefix string for joined clauses.
      * @param   string              $postfix                    Postfix string for joined clauses.
      */
-    public function __construct($joiner, $prefix, $postfix)
+    public function __construct(string $joiner, string $prefix, string $postfix)
     {
         $this->joiner = $joiner;
         $this->prefix = $prefix;
@@ -79,7 +81,7 @@ class Clauses
      * @param   array                       $parameters         Parameters for resolving snippet.
      * @return  string                                          Resolved clauses.
      */
-    public function resolveClauses(array &$parameters)
+    public function resolveClauses(array &$parameters): string
     {
         $parameters = array_merge($parameters, $this->parameters);
 
@@ -129,7 +131,7 @@ class Clauses
      * @param   array               $parameters                 Parameters for clause.
      * @param   bool                $is_inclusive               Clause mode.
      */
-    public function addClause($sql, array $parameters, $is_inclusive)
+    public function addClause(string $sql, array $parameters, bool $is_inclusive)
     {
         $this->clauses[$is_inclusive][] = $sql;
 
