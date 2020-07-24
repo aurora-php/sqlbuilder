@@ -77,7 +77,7 @@ class Clauses
      * Resolve clauses.
      *
      * @param   array                       $parameters         Parameters for resolving snippet.
-     * @return  array                                           Array of resolved template snippet and parameters.
+     * @return  string                                          Resolved clauses.
      */
     public function resolveClauses(array &$parameters)
     {
