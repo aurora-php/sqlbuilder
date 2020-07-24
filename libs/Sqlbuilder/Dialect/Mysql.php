@@ -17,7 +17,7 @@ namespace Octris\Sqlbuilder\Dialect;
  * @copyright   copyright (c) 2016-2018 by Harald Lapp
  * @author      Harald Lapp <harald@octris.org>
  */
-class Mysql extends \Octris\Sqlbuilder\Dialect
+class Mysql extends \Octris\Sqlbuilder\AbstractDialect
 {
     /**
      * Return string for limiting result.

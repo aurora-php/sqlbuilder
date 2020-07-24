@@ -14,10 +14,10 @@ namespace Octris\Sqlbuilder;
 /**
  * SQL Dialects base class.
  *
- * @copyright   copyright (c) 2016-2018 by Harald Lapp
+ * @copyright   copyright (c) 2016-present by Harald Lapp
  * @author      Harald Lapp <harald@octris.org>
  */
-abstract class Dialect
+abstract class AbstractDialect
 {
     /**
      * Return string for limiting result.
