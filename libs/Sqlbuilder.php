@@ -55,7 +55,7 @@ class Sqlbuilder
      *
      * @param   string                      $name               Name of snippet to resolve.
      * @param   array                       $parameters         Parameters for resolving snippet.
-     * @return  array                                           Array of resolved template snippet and parameters.
+     * @return  array                                           Resolved template snippet.
      */
     public function resolveSnippet($name, array &$parameters)
     {
@@ -78,6 +78,7 @@ class Sqlbuilder
      * @param   int                                 $idx        Position of the parameter in the query.
      * @param   string                              $type       Type of the parameter.
      * @param   string                              $name       Name of the parameter.
+     * @return  string
      */
     public function resolveParameter($idx, $type, $name)
     {
