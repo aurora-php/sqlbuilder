@@ -34,6 +34,7 @@ abstract class AbstractDialect
      * @param   int                     $idx                Position of the parameter in the query.
      * @param   string                  $type               Type of the parameter.
      * @param   string                  $name               Name of the parameter.
+     * @return  string
      */
     abstract public function resolveParameter($idx, $type, $name);
 }

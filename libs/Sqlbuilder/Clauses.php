@@ -14,7 +14,7 @@ namespace Octris\Sqlbuilder;
 /**
  * SQL builder clauses.
  *
- * @copyright   copyright (c) 2016 by Harald Lapp
+ * @copyright   copyright (c) 2016-present by Harald Lapp
  * @author      Harald Lapp <harald@octris.org>
  */
 class Clauses
@@ -22,35 +22,35 @@ class Clauses
     /**
      * String to use for joining multiple clauses.
      *
-     * @type    string
+     * @var     string
      */
     protected $joiner;
 
     /**
      * Prefix string for joined clauses.
      *
-     * @type    string
+     * @var     string
      */
     protected $prefix;
 
     /**
      * Postfix string for joined clauses.
      *
-     * @type    string
+     * @var     string
      */
     protected $postfix;
 
     /**
      * Clauses.
      *
-     * @type    array
+     * @var     array
      */
     protected $clauses;
 
     /**
      * Parameters.
      *
-     * @type    array
+     * @var     array
      */
     protected $parameters = array();
 

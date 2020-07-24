@@ -14,7 +14,7 @@ namespace Octris\Sqlbuilder;
 /**
  * SQL builder template class.
  *
- * @copyright   copyright (c) 2016 by Harald Lapp
+ * @copyright   copyright (c) 2016-present by Harald Lapp
  * @author      Harald Lapp <harald@octris.org>
  */
 class Template
@@ -22,14 +22,14 @@ class Template
     /**
      * SQL builder instance.
      *
-     * @type    \Octris\Sqlbuilder
+     * @var     \Octris\Sqlbuilder
      */
     protected $builder;
 
     /**
      * SQL template.
      *
-     * @type    string
+     * @var     string
      */
     protected $sql;
 

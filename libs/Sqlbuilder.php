@@ -14,7 +14,7 @@ namespace Octris;
 /**
  * SQL builder.
  *
- * @copyright   copyright (c) 2016-2018 by Harald Lapp
+ * @copyright   copyright (c) 2016-present by Harald Lapp
  * @author      Harald Lapp <harald@octris.org>
  */
 class Sqlbuilder
@@ -22,28 +22,28 @@ class Sqlbuilder
     /**
      * Instance of SQL dialect class.
      *
-     * @type    \Octris\Sqlbuilder\Dialect
+     * @var     AbstractDialect
      */
     protected $dialect;
 
     /**
      * Template snippets.
      *
-     * @type    array
+     * @var     array
      */
     protected $snippets = array();
 
     /**
      * Clauses.
      *
-     * @type    array
+     * @var     array
      */
     protected $clauses = array();
 
     /**
      * Constructor.
      *
-     * @param   \Octris\Sqlbuilder\Dialect          $dialect    SQL dialect to use.
+     * @param   \Octris\Sqlbuilder\AbstractDialect          $dialect    SQL dialect to use.
      */
     public function __construct(\Octris\Sqlbuilder\Dialect $dialect)
     {
