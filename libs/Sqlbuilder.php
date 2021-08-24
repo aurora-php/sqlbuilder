@@ -113,7 +113,7 @@ class Sqlbuilder
      */
     public function addTemplate(string $sql): Template
     {
-        $instance = Template($this, $sql);
+        $instance = new Template($this, $sql);
 
         return $instance;
     }
